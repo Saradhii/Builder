@@ -1,7 +1,21 @@
+import type { Metadata } from "next";
 import { AnimateIcon } from "@/components/animate-ui/icons/icon";
 import { Bot } from "@/components/animate-ui/icons/bot";
 import { Sparkles } from "@/components/animate-ui/icons/sparkles";
 import { SquareKanban } from "@/components/animate-ui/icons/square-kanban";
+
+export const metadata: Metadata = {
+  title: "Docs — How to build a website with AI",
+  description:
+    "Learn how to use BLDR, an AI website builder. Pick a model, describe the website you want with clear prompts, iterate with follow-ups, and export clean HTML.",
+  alternates: { canonical: "/docs/" },
+  openGraph: {
+    title: "Docs — How to build a website with AI · BLDR",
+    description:
+      "A step-by-step guide to building websites with BLDR's AI: model selection, prompting tips, iteration, and export.",
+    url: "/docs/",
+  },
+};
 
 export default function DocsPage() {
   return (

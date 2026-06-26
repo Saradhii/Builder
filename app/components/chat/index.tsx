@@ -21,6 +21,7 @@ import {
   type ModelInfo,
 } from "@/lib/api-client";
 import { deployWebsite } from "@/lib/deploy-client";
+import { captureThumbnail } from "@/lib/capture-thumbnail";
 import {
   AlertTriangle,
   ArrowUp,
@@ -720,11 +721,16 @@ export function ChatInterface() {
     setDeployError(null);
     setIsDeployLinkCopied(false);
 
-    void deployWebsite({
-      id: websiteId,
-      html: previewHtml,
-      name: "website",
-    })
+    void captureThumbnail(previewHtml)
+      .catch(() => undefined)
+      .then((thumbnail) =>
+        deployWebsite({
+          id: websiteId,
+          html: previewHtml,
+          name: "website",
+          thumbnail,
+        })
+      )
       .then((response) => {
         posthog.capture("deploy_succeeded", { website_id: websiteId, deploy_url: response.url });
         setDeployUrl(response.url);

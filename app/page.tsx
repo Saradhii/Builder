@@ -1,5 +1,13 @@
 import { Suspense } from "react";
+import type { Metadata } from "next";
 import { ChatInterface } from "./components/chat";
+
+export const metadata: Metadata = {
+  title: "BLDR — AI Website Builder | Build a site from a prompt",
+  description:
+    "Build a website with AI. Describe what you want in plain English, refine it with follow-up prompts, preview it live, and export clean HTML — all in one place.",
+  alternates: { canonical: "/" },
+};
 
 export default function Home() {
   return (

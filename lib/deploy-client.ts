@@ -2,6 +2,7 @@ type DeployWebsiteRequest = {
   id: string;
   html: string;
   name?: string;
+  thumbnail?: string;
 };
 
 type DeployWebsiteResponse = {

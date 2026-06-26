@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { fetchSites, type SiteInfo } from "@/lib/api-client";
 import { ExternalLink, Globe, Loader2 } from "lucide-react";
@@ -25,10 +26,23 @@ function formatDate(iso: string) {
 }
 
 function SiteCard({ site }: { site: SiteInfo }) {
+  const [imgError, setImgError] = useState(false);
+
   return (
     <div className="group rounded-2xl border border-input bg-background/90 overflow-hidden transition-colors hover:border-primary/30">
       <div className="aspect-video bg-muted/40 relative flex items-center justify-center border-b border-input">
-        <Globe className="size-8 text-muted-foreground/40" />
+        {site.thumbnailUrl && !imgError ? (
+          <Image
+            src={site.thumbnailUrl}
+            alt={site.name ?? site.id}
+            fill
+            className="object-cover object-top"
+            sizes="320px"
+            onError={() => setImgError(true)}
+          />
+        ) : (
+          <Globe className="size-8 text-muted-foreground/40" />
+        )}
         <Link
           href={site.url}
           target="_blank"

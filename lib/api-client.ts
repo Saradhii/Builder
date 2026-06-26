@@ -190,6 +190,7 @@ export type SiteInfo = {
   name: string | null;
   updatedAt: string;
   url: string;
+  thumbnailUrl: string;
 };
 
 export async function fetchSites(signal?: AbortSignal) {
