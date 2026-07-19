@@ -5,7 +5,8 @@ import { usePathname } from "next/navigation";
 import { ThemeToggle } from "./theme-toggle";
 import { Binary } from "@/components/animate-ui/icons/binary";
 import { Hammer } from "@/components/animate-ui/icons/hammer";
-import { Rocket } from "@/components/animate-ui/icons/rocket";
+import { SquareKanban } from "@/components/animate-ui/icons/square-kanban";
+import { Orbit } from "@/components/animate-ui/icons/orbit";
 import { AnimateIcon } from "@/components/animate-ui/icons/icon";
 
 export function Navbar() {
@@ -55,8 +56,19 @@ export function Navbar() {
                     className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 transition hover:text-neutral-600 dark:hover:text-neutral-400"
                     href="/builds"
                   >
-                    <Rocket size={20} />
+                    <SquareKanban size={20} />
                     BUILDS
+                  </Link>
+                </AnimateIcon>
+              </li>
+              <li>
+                <AnimateIcon animateOnHover asChild>
+                  <Link
+                    className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 transition hover:text-neutral-600 dark:hover:text-neutral-400"
+                    href="/templates"
+                  >
+                    <Orbit size={20} />
+                    TEMPLATES
                   </Link>
                 </AnimateIcon>
               </li>

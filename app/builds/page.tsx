@@ -102,7 +102,7 @@ export default function SitesPage() {
             Deployed Builds
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            All websites you&apos;ve built and deployed.
+            All websites built and deployed with BLDR.
           </p>
         </div>
 
