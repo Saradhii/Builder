@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Plety — The intelligence layer for clear decisions</title>
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #000000;
+    --surface: #1F1F22;
+    --surface-hover: #2A2A2D;
+    --card: #1C1C1E;
+    --card-90: rgba(28, 28, 30, 0.9);
+    --border: rgba(255, 255, 255, 0.1);
+    --border-5: rgba(255, 255, 255, 0.05);
+    --white: #ffffff;
+    --gray-300: #d1d5db;
+    --gray-400: #9ca3af;
+    --gray-500: #6b7280;
+    --yellow: #facc15;
+    --green: #4ade80;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 90px;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--white);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+  }
+
+  a { color: inherit; text-decoration: none; }
+  button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+  img, svg, video { display: block; max-width: 100%; }
+  ul { list-style: none; }
+
+  .serif-italic {
+    font-family: Georgia, "Times New Roman", "Playfair Display", serif;
+    font-style: italic;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+  }
+
+  a:focus-visible, button:focus-visible {
+    outline: 2px solid rgba(255,255,255,0.6);
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
+
+  /* ===== Scroll Reveal (FadeInUp) ===== */
+  .reveal {
+    opacity: 0;
+    transform: translateY(40px); /* translate-y-10 */
+    transition: opacity 1000ms cubic-bezier(0.22, 1, 0.36, 1),
+                transform 1000ms cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: opacity, transform;
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ===== Navigation ===== */
+  .nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 50;
+    transition: background-color 320ms ease, backdrop-filter 320ms ease, border-color 320ms ease;
+    border-bottom: 1px solid transparent;
+  }
+  .nav.scrolled {
+    background: rgba(0, 0, 0, 0.72);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom-color: var(--border-5);
+  }
+  .nav-inner {
+    max-width: 80rem;
+    margin: 0 auto;
+    padding: 1rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+  .nav-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    color: var(--white);
+    font-weight: 600;
+    font-size: 1.0625rem;
+    letter-spacing: -0.015em;
+  }
+  .nav-brand svg { width: 28px; height: 28px; color: var(--white); }
+
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 2.25rem;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  .nav-links a {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--gray-300);
+    transition: color 200ms ease;
+  }
+  .nav-links a:hover { color: var(--white); }
+
+  .nav-cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.875rem;
+    font-weight: 500;
+    padding: 0.625rem 1.25rem;
+    border-radius: 9999px;
+    background: var(--surface);
+    border: 1px solid var(--border-5);
+    color: var(--white);
+    transition: background-color 200ms ease, transform 200ms ease;
+  }
+  .nav-cta:hover { background: var(--surface-hover); transform: translateY(-1px); }
+
+  .nav-toggle {
+    display: none;
+    width: 42px; height: 42px;
+    align-items: center; justify-content: center;
+    border-radius: 10px;
+    color: var(--white);
+    transition: background-color 200ms ease;
+  }
+  .nav-toggle:hover { background: rgba(255,255,255,0.05); }
+  .nav-toggle svg { width: 22px; height: 22px; }
+
+  .mobile-menu {
+    position: fixed;
+    top: 65px; left: 0; right: 0;
+    z-index: 49;
+    background: rgba(0,0,0,0.92);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border-5);
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 420ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .mobile-menu.open { max-height: 460px; }
+  .mobile-menu-inner {
+    padding: 0.75rem 1.5rem 1.5rem;
+    display: flex; flex-direction: column;
+    gap: 0.125rem;
+    max-width: 80rem;
+    margin: 0 auto;
+  }
+  .mobile-menu a {
+    padding: 0.95rem 0.5rem;
+    font-size: 0.975rem;
+    color: var(--gray-300);
+    border-bottom: 1px solid var(--border-5);
+    transition: color 200ms ease;
+  }
+  .mobile-menu a:hover { color: var(--white); }
+  .mobile-menu .nav-cta {
+    margin-top: 1.125rem;
+    border-bottom: none;
+    padding: 0.875rem;
+  }
+
+  @media (max-width: 860px) {
+    .nav-links, .nav-desktop-cta { display: none; }
+    .nav-toggle { display: inline-flex; }
+  }
+
+  /* ===== Buttons ===== */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    padding: 0.75rem 1.5rem;
+    border-radius: 9999px;
+    transition: transform 200ms ease, background-color 200ms ease, opacity 200ms ease;
+    white-space: nowrap;
+  }
+  .btn-primary {
+    background: var(--white);
+    color: #000;
+  }
+  .btn-primary:hover { transform: translateY(-2px); opacity: 0.92; }
+  .btn-secondary {
+    background: var(--surface);
+    color: var(--white);
+    border: 1px solid var(--border-5);
+  }
+  .btn-secondary:hover { background: var(--surface-hover); transform: translateY(-2px); }
+
+  /* ===== Hero ===== */
+  .hero {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 8rem 1.5rem 5rem;
+    z-index: 0;
+    overflow: hidden;
+  }
+  .hero-video {
+    position: absolute;
+    inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    opacity: 0.9;
+    z-index: 0;
+    background: #050505;
+  }
+  .hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0) 50%, rgba(0,0,0,1) 100%);
+    z-index: 1;
+    pointer-events: none;
+  }
+  .hero-content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 56rem;
+    width: 100%;
+    text-align: center;
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.375rem 0.75rem;
+    border-radius: 9999px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--gray-300);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    margin-bottom: 2rem;
+  }
+  .badge-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 10px rgba(74,222,128,0.7);
+    animation: pulse 2.4s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(0.85); }
+  }
+
+  .hero h1 {
+    font-size: clamp(2.75rem, 6.5vw, 4.5rem);
+    font-weight: 500;
+    letter-spacing: -0.035em;
+    line-height: 1.04;
+    margin-bottom: 1.5rem;
+    max-width: 18ch;
+  }
+
+  .hero .subtext {
+    font-size: 16px;
+    color: var(--gray-400);
+    max-width: 42rem;
+    margin: 0 auto 2.5rem;
+    line-height: 1.6;
+  }
+
+  .hero-buttons {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  /* ===== Marquee ===== */
+  .marquee-section {
+    margin-top: 6rem;
+    width: 100%;
+  }
+  .marquee-label {
+    font-size: 0.875rem;
+    color: var(--gray-500);
+    font-weight: 500;
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+  .marquee-wrap {
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
+    mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
+  }
+  .marquee-track {
+    display: flex;
+    width: max-content;
+    animation: marquee 32s linear infinite;
+  }
+  @keyframes marquee {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-33.3333%); }
+  }
+  .marquee-item {
+    flex-shrink: 0;
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    color: var(--gray-500);
+    font-size: 1.25rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    transition: color 200ms ease;
+  }
+  .marquee-item:hover { color: var(--gray-300); }
+  .marquee-item svg { width: 28px; height: 28px; }
+
+  /* ===== Features ===== */
+  .feature {
+    max-width: 80rem;
+    margin: 0 auto;
+    padding: 6rem 1.5rem;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 3.5rem;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+  }
+  @media (min-width: 1024px) {
+    .feature { grid-template-columns: 1fr 1fr; gap: 4rem; padding: 7rem 1.5rem; }
+  }
+
+  .feature-text { max-width: 32rem; }
+  .feature-badge {
+    display: inline-block;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin-bottom: 1.125rem;
+  }
+  .feature-badge.yellow { color: var(--yellow); }
+  .feature-badge.green { color: var(--green); }
+
+  .feature h2 {
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 600;
+    letter-spacing: -0.028em;
+    line-height: 1.1;
+    margin-bottom: 1.25rem;
+  }
+  .feature .subtext {
+    color: var(--gray-400);
+    font-size: 1.0625rem;
+    line-height: 1.625;
+    margin-bottom: 2rem;
+  }
+
+  .feature-mockup {
+    position: relative;
+    border-radius: 1.5rem;
+    overflow: hidden;
+    padding: 2rem;
+    border: 1px solid var(--border);
+    min-height: 460px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #0a0a0c;
+  }
+  .feature-mockup-video {
+    position: absolute;
+    inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    z-index: 0;
+  }
+  .feature-mockup-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.2);
+    z-index: 1;
+  }
+  .feature-card {
+    position: relative;
+    z-index: 2;
+    background: var(--card-90);
+    backdrop-filter: blur(28px);
+    -webkit-backdrop-filter: blur(28px);
+    border: 1px solid var(--border);
+    border-radius: 1rem;
+    padding: 1rem;
+    width: 100%;
+    max-width: 380px;
+    box-shadow: 0 24px 60px -20px rgba(0,0,0,0.7);
+  }
+
+  /* Chat card */
+  .chat-chips {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.875rem;
+  }
+  .chat-chip {
+    font-size: 0.75rem;
+    padding: 0.375rem 0.75rem;
+    border-radius: 9999px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--border);
+    color: var(--gray-300);
+  }
+  .chat-input-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 0.875rem;
+    border-radius: 0.75rem;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+  }
+  .chat-input-row .placeholder { color: var(--gray-500); font-size: 0.875rem; flex: 1; text-align: left; }
+  .icon-btn {
+    width: 28px; height: 28px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--gray-300);
+    border-radius: 6px;
+    transition: color 200ms ease, background 200ms ease;
+  }
+  .icon-btn:hover { color: var(--white); background: rgba(255,255,255,0.06); }
+
+  .soundwave {
+    display: flex; align-items: center; gap: 2px;
+    height: 16px;
+    color: var(--gray-400);
+  }
+  .soundwave span {
+    display: block; width: 2px; background: currentColor; border-radius: 1px;
+    animation: wave 1.2s ease-in-out infinite;
+  }
+  .soundwave span:nth-child(1) { animation-delay: 0s; }
+  .soundwave span:nth-child(2) { animation-delay: 0.15s; }
+  .soundwave span:nth-child(3) { animation-delay: 0.3s; }
+  .soundwave span:nth-child(4) { animation-delay: 0.45s; }
+  .soundwave span:nth-child(5) { animation-delay: 0.6s; }
+  @keyframes wave {
+    0%, 100% { transform: scaleY(0.5); }
+    50% { transform: scaleY(1.2); }
+  }
+
+  /* Transcription card */
+  .trans-top {
+    display: flex; align-items: center; gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+  .play-btn {
+    width: 40px; height: 40px;
+    flex-shrink: 0;
+    border-radius: 9999px;
+    background: var(--white);
+    color: #000;
+    display: flex; align-items: center; justify-content: center;
+    transition: transform 200ms ease;
+  }
+  .play-btn:hover { transform: scale(1.06); }
+  .trans-meta { flex: 1; text-align: left; }
+  .trans-meta .time { font-size: 0.8125rem; color: var(--gray-300); font-weight: 500; }
+  .trans-meta .name { font-size: 0.75rem; color: var(--gray-500); }
+  .waveform {
+    display: flex; align-items: center; gap: 2px;
+    height: 36px;
+    margin-bottom: 1rem;
+  }
+  .waveform span {
+    flex: 1; background: var(--gray-500); border-radius: 9999px; min-width: 2px;
+    transition: background 200ms ease;
+  }
+  .waveform span.active { background: var(--gray-300); }
+  .trans-text {
+    font-size: 0.8125rem;
+    color: var(--gray-400);
+    line-height: 1.6;
+    text-align: left;
+  }
+  .trans-text b { color: var(--gray-300); font-weight: 500; }
+
+  /* ===== FAQ ===== */
+  .faq-section {
+    max-width: 48rem;
+    margin: 0 auto;
+    padding: 8rem 1.5rem;
+    position: relative;
+    z-index: 1;
+  }
+  .faq-section h2 {
+    text-align: center;
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 600;
+    letter-spacing: -0.028em;
+    margin-bottom: 3rem;
+  }
+  .faq-wrap {
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    background: transparent;
+    overflow: hidden;
+  }
+  .faq-item {
+    border-bottom: 1px solid var(--border);
+  }
+  .faq-item:last-child { border-bottom: none; }
+  .faq-trigger {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.5rem;
+    text-align: left;
+    transition: background-color 200ms ease;
+  }
+  .faq-trigger:hover { background: rgba(255,255,255,0.02); }
+  .faq-trigger .q {
+    font-size: 1rem;
+    color: var(--white);
+    font-weight: 500;
+    letter-spacing: -0.01em;
+  }
+  .faq-icon {
+    width: 22px; height: 22px;
+    flex-shrink: 0;
+    color: var(--gray-300);
+    transition: transform 350ms cubic-bezier(0.22, 1, 0.36, 1), color 200ms ease;
+  }
+  .faq-item.open .faq-icon { transform: rotate(135deg); color: var(--white); }
+
+  .faq-body {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 380ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .faq-item.open .faq-body { grid-template-rows: 1fr; }
+  .faq-body > div { overflow: hidden; min-height: 0; }
+  .faq-body p {
+    color: var(--gray-400);
+    font-size: 0.875rem;
+    line-height: 1.65;
+    padding: 0 1.5rem 1.5rem;
+    max-width: 56ch;
+  }
+
+  /* ===== Footer ===== */
+  .footer {
+    position: relative;
+    padding: 8rem 1.5rem 2.5rem;
+    border-top: 1px solid var(--border-5);
+    overflow: hidden;
+    z-index: 0;
+  }
+  .footer-video {
+    position: absolute;
+    inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    opacity: 0.4;
+    z-index: 0;
+  }
+  .footer-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.6) 35%, rgba(0,0,0,0.6) 65%, rgba(0,0,0,1) 100%);
+    z-index: 1;
+    pointer-events: none;
+  }
+  .footer-inner {
+    position: relative;
+    z-index: 2;
+    max-width: 80rem;
+    margin: 0 auto;
+  }
+  .footer-cta {
+    text-align: center;
+    margin-bottom: 8rem;
+  }
+  .footer-cta h2 {
+    font-size: clamp(2.25rem, 5.5vw, 4rem);
+    font-weight: 600;
+    letter-spacing: -0.035em;
+    margin-bottom: 2rem;
+    line-height: 1.08;
+  }
+  .footer-cta .hero-buttons { justify-content: center; }
+
+  .footer-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+    margin-bottom: 6rem;
+  }
+  @media (min-width: 768px) {
+    .footer-grid { grid-template-columns: 2fr 1fr 1fr 1fr; gap: 2rem; }
+  }
+  .footer-brand-col .nav-brand { margin-bottom: 0.875rem; font-size: 1.25rem; font-weight: 700; }
+  .footer-brand-col p {
+    color: var(--gray-400);
+    font-size: 0.875rem;
+    line-height: 1.55;
+    max-width: 22rem;
+  }
+  .footer-col h4 {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--gray-300);
+    margin-bottom: 1.125rem;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+  .footer-col ul { display: flex; flex-direction: column; gap: 0.75rem; }
+  .footer-col a {
+    font-size: 0.875rem;
+    color: var(--gray-400);
+    transition: color 200ms ease;
+  }
+  .footer-col a:hover { color: var(--white); }
+
+  .footer-bottom {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border-5);
+    font-size: 0.75rem;
+    color: var(--gray-500);
+    text-align: center;
+  }
+  @media (min-width: 768px) {
+    .footer-bottom { flex-direction: row; gap: 0.75rem; }
+  }
+  .footer-bottom .bright { color: var(--gray-300); }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+    .reveal { opacity: 1; transform: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============== NAVIGATION ============== -->
+<header class="nav" id="nav">
+  <div class="nav-inner">
+    <a href="#about" class="nav-brand" aria-label="Plety home">
+      <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M16 3L27.5 9.65V22.35L16 29L4.5 22.35V9.65L16 3Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+        <path d="M16 10.5L21.8 13.85V20.15L16 23.5L10.2 20.15V13.85L16 10.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+      </svg>
+      <span>Plety</span>
+    </a>
+
+    <nav class="nav-links" aria-label="Primary">
+      <a href="#about">About</a>
+      <a href="#features">Features</a>
+      <a href="#faq">FAQ</a>
+      <a href="#contact">Contact</a>
+    </nav>
+
+    <div class="nav-desktop-cta">
+      <a href="#contact" class="nav-cta">Get started</a>
+    </div>
+
+    <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false">
+      <svg id="navToggleIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <line x1="4" y1="7" x2="20" y2="7"/>
+        <line x1="4" y1="12" x2="20" y2="12"/>
+        <line x1="4" y1="17" x2="20" y2="17"/>
+      </svg>
+    </button>
+  </div>
+</header>
+
+<!-- Mobile dropdown -->
+<div class="mobile-menu" id="mobileMenu">
+  <div class="mobile-menu-inner">
+    <a href="#about" data-mobile-link>About</a>
+    <a href="#features" data-mobile-link>Features</a>
+    <a href="#faq" data-mobile-link>FAQ</a>
+    <a href="#contact" data-mobile-link>Contact</a>
+    <a href="#contact" class="nav-cta" data-mobile-link>Get started</a>
+  </div>
+</div>
+
+<main>
+
+  <!-- ============== HERO ============== -->
+  <section id="about" class="hero">
+    <video class="hero-video" autoplay muted loop playsinline preload="auto">
+      <source src="https://cdn.sceneai.art/Hero%20Section%20Video/50b4f304-cdca-4e12-8735-580d225834be.mp4" type="video/mp4">
+    </video>
+    <div class="hero-overlay"></div>
+
+    <div class="hero-content">
+      <span class="badge reveal">
+        <span class="badge-dot"></span>
+        Announcing API 2.0
+      </span>
+
+      <h1 class="reveal">
+        The intelligence layer for clear <span class="serif-italic">decisions.</span>
+      </h1>
+
+      <p class="subtext reveal">Our platform integrates seamlessly into your stack to deliver real-time understanding, not just predictions.</p>
+
+      <div class="hero-buttons reveal">
+        <a href="#contact" class="btn btn-primary">Get started</a>
+        <a href="#features" class="btn btn-secondary">Learn more</a>
+      </div>
+
+      <div class="marquee-section reveal">
+        <p class="marquee-label">Trusted by industry leaders</p>
+        <div class="marquee-wrap">
+          <div class="marquee-track" id="marqueeTrack" aria-hidden="true"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============== FEATURE 1: AI CHAT ============== -->
+  <section id="features" class="feature">
+    <div class="feature-text reveal">
+      <span class="feature-badge yellow">AI chat</span>
+      <h2>Where speed meets intelligent conversation.</h2>
+      <p class="subtext">A conversational AI assistant that understands your questions, provides intelligent answers, and helps you get things done fast from casual chats to complex tasks.</p>
+      <a href="#contact" class="btn btn-primary">Get started</a>
+    </div>
+
+    <div class="feature-mockup reveal">
+      <video class="feature-mockup-video" autoplay muted loop playsinline preload="auto">
+        <source src="https://cdn.sceneai.art/Hero%20Section%20Video/1bcc8fa3-37f6-4c53-8591-0347e4c7f8ac.mp4" type="video/mp4">
+      </video>
+      <div class="feature-mockup-overlay"></div>
+
+      <div class="feature-card">
+        <div class="chat-chips">
+          <span class="chat-chip">Create image</span>
+          <span class="chat-chip">Summarize</span>
+          <span class="chat-chip">Write code</span>
+        </div>
+        <div class="chat-input-row">
+          <span class="placeholder">Ask anything…</span>
+          <div class="soundwave" aria-hidden="true">
+            <span style="height: 30%"></span>
+            <span style="height: 80%"></span>
+            <span style="height: 50%"></span>
+            <span style="height: 95%"></span>
+            <span style="height: 45%"></span>
+          </div>
+          <button class="icon-btn" aria-label="Voice input">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="9" y="2" width="6" height="13" rx="3"/>
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+              <line x1="12" y1="19" x2="12" y2="23"/>
+              <line x1="8" y1="23" x2="16" y2="23"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============== FEATURE 2: AI TRANSCRIPTION ============== -->
+  <section class="feature">
+    <div class="feature-mockup reveal">
+      <video class="feature-mockup-video" autoplay muted loop playsinline preload="auto">
+        <source src="https://cdn.sceneai.art/Hero%20Section%20Video/736fd4a0-70ac-4f44-9633-55769ead6aca.mp4" type="video/mp4">
+      </video>
+      <div class="feature-mockup-overlay"></div>
+
+      <div class="feature-card">
+        <div class="trans-top">
+          <button class="play-btn" aria-label="Play recording">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M8 5v14l11-7L8 5z"/>
+            </svg>
+          </button>
+          <div class="trans-meta">
+            <div class="time">11:06 AM</div>
+            <div class="name">Chris</div>
+          </div>
+        </div>
+        <div class="waveform" id="waveform" aria-hidden="true"></div>
+        <p class="trans-text">"Hey team, let's sync on the launch. <b>We've got three big milestones</b> hitting this week — design review, the API hand-off, and the QA pass. I want to make sure nothing slips."</p>
+      </div>
+    </div>
+
+    <div class="feature-text reveal">
+      <span class="feature-badge green">AI transcription</span>
+      <h2>Turn speech into text with speed and precision.</h2>
+      <p class="subtext">Automatically convert speech into accurate, editable text in real time. Perfect for meetings, interviews, voice notes, and more, powered by advanced speech recognition technology.</p>
+      <a href="#contact" class="btn btn-primary">Get started</a>
+    </div>
+  </section>
+
+  <!-- ============== FAQ ============== -->
+  <section id="faq" class="faq-section">
+    <h2 class="reveal">We've got answers</h2>
+    <div class="faq-wrap reveal" id="faqWrap"></div>
+  </section>
+
+</main>
+
+<!-- ============== FOOTER ============== -->
+<footer id="contact" class="footer">
+  <video class="footer-video" autoplay muted loop playsinline preload="auto">
+    <source src="https://cdn.sceneai.art/Hero%20Section%20Video/50b4f304-cdca-4e12-8735-580d225834be.mp4" type="video/mp4">
+  </video>
+  <div class="footer-overlay"></div>
+
+  <div class="footer-inner">
+    <div class="footer-cta reveal">
+      <h2>Ready to automate <span class="serif-italic">everything?</span></h2>
+      <div class="hero-buttons">
+        <a href="#" class="btn btn-primary">Get started</a>
+        <a href="#features" class="btn btn-secondary">Learn more</a>
+      </div>
+    </div>
+
+    <div class="footer-grid">
+      <div class="footer-brand-col">
+        <div class="nav-brand">
+          <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M16 3L27.5 9.65V22.35L16 29L4.5 22.35V9.65L16 3Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+            <path d="M16 10.5L21.8 13.85V20.15L16 23.5L10.2 20.15V13.85L16 10.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+          </svg>
+          <span>Plety</span>
+        </div>
+        <p>Speed, scale, and smarts — deployed.</p>
+      </div>
+
+      <div class="footer-col">
+        <h4>Product</h4>
+        <ul>
+          <li><a href="#about">About</a></li>
+          <li><a href="#">Pricing</a></li>
+          <li><a href="#">Changelog</a></li>
+          <li><a href="#contact">Contact</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <ul>
+          <li><a href="#">Terms of service</a></li>
+          <li><a href="#">Privacy policy</a></li>
+          <li><a href="#">404</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>Connect</h4>
+        <ul>
+          <li><a href="#">Instagram</a></li>
+          <li><a href="#">YouTube</a></li>
+          <li><a href="#">LinkedIn</a></li>
+          <li><a href="#">Twitter / X</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <span>© 2026 Plety. All rights reserved · by <span class="bright">Re-text</span> · Made in <span class="bright">Gemini</span>.</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // ===== Navbar scrolled state =====
+  const nav = document.getElementById('nav');
+  const handleScroll = () => {
+    if (window.scrollY > 20) nav.classList.add('scrolled');
+    else nav.classList.remove('scrolled');
+  };
+  window.addEventListener('scroll', handleScroll, { passive: true });
+  handleScroll();
+
+  // ===== Mobile menu =====
+  const toggle = document.getElementById('navToggle');
+  const toggleIcon = document.getElementById('navToggleIcon');
+  const mobileMenu = document.getElementById('mobileMenu');
+  let menuOpen = false;
+
+  const iconOpen = '<line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/>';
+  const iconClosed = '<line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/>';
+
+  const setMenu = (open) => {
+    menuOpen = open;
+    mobileMenu.classList.toggle('open', open);
+    toggle.setAttribute('aria-expanded', String(open));
+    toggleIcon.innerHTML = open ? iconOpen : iconClosed;
+  };
+
+  toggle.addEventListener('click', () => setMenu(!menuOpen));
+  document.querySelectorAll('[data-mobile-link]').forEach(a => {
+    a.addEventListener('click', () => setMenu(false));
+  });
+
+  // ===== Marquee (5 brands x 3 copies) =====
+  const brands = [
+    { name: 'Springfield', icon: '<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4C10 12 6 16 16 28C26 16 22 12 16 4Z"/><path d="M16 14V22"/></svg>' },
+    { name: 'Orbitc', icon: '<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="16" cy="16" r="9"/><ellipse cx="16" cy="16" rx="14" ry="5.5" transform="rotate(45 16 16)"/></svg>' },
+    { name: 'Cloud', icon: '<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 23a6 6 0 0 1 0-12 8 8 0 0 1 15.5 2 5 5 0 0 1-0.5 10H9Z"/></svg>' },
+    { name: 'Amster', icon: '<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 27L16 5L26 27"/><path d="M10.5 20H21.5"/></svg>' },
+    { name: 'Nexus', icon: '<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="16" cy="6" r="3"/><circle cx="6" cy="24" r="3"/><circle cx="26" cy="24" r="3"/><path d="M14.6 8.4L7.4 21.6M17.4 8.4L24.6 21.6M9 24h14" stroke-linecap="round"/></svg>' }
+  ];
+  const track = document.getElementById('marqueeTrack');
+  const renderItem = (b) => `<div class="marquee-item">${b.icon}<span>${b.name}</span></div>`;
+  let marqueeHTML = '';
+  for (let i = 0; i < 3; i++) marqueeHTML += brands.map(renderItem).join('');
+  track.innerHTML = marqueeHTML;
+
+  // ===== Waveform =====
+  const wf = document.getElementById('waveform');
+  if (wf) {
+    const heights = [25, 55, 80, 45, 90, 65, 35, 75, 50, 85, 40, 70, 30, 95, 60, 45, 80, 50, 35, 75, 90, 55, 40, 70, 30, 85, 60, 45, 75, 50];
+    const activeUntil = 13;
+    wf.innerHTML = heights.map((h, i) =>
+      `<span style="height: ${h}%" class="${i < activeUntil ? 'active' : ''}"></span>`
+    ).join('');
+  }
+
+  // ===== FAQ accordion =====
+  const faqs = [
+    { q: 'Is my data safe with Plety?', a: 'Absolutely. All data is encrypted in transit and at rest with industry-standard AES-256. We never sell your information, and you can permanently delete your data at any time from the dashboard.' },
+    { q: 'How does Plety integrate with my stack?', a: 'Plety ships with first-class SDKs for JavaScript, Python, and Go, plus webhooks and a REST API. Most teams are up and running in under ten minutes with a single line of code.' },
+    { q: 'Can I use Plety for free?', a: 'Yes — the free tier includes 1,000 requests per month and full access to both the chat and transcription endpoints. Upgrade only when you need more volume or team features.' },
+    { q: 'Which languages are supported?', a: 'Our models support 95+ languages for chat and 70+ for real-time transcription, with new languages shipping in every release. Language auto-detection is on by default.' },
+    { q: 'Do you offer enterprise plans?', a: 'We do. Enterprise plans include SSO, custom rate limits, dedicated infrastructure, audit logs, and a 99.99% uptime SLA. Reach out to our sales team for a tailored quote.' }
+  ];
+
+  const faqWrap = document.getElementById('faqWrap');
+  faqWrap.innerHTML = faqs.map(f => `
+    <div class="faq-item" data-faq>
+      <button class="faq-trigger" aria-expanded="false">
+        <span class="q">${f.q}</span>
+        <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <line x1="12" y1="5" x2="12" y2="19"/>
+          <line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+      </button>
+      <div class="faq-body">
+        <div><p>${f.a}</p></div>
+      </div>
+    </div>
+  `).join('');
+
+  document.querySelectorAll('[data-faq]').forEach(item => {
+    const trigger = item.querySelector('.faq-trigger');
+    trigger.addEventListener('click', () => {
+      const isOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item.open').forEach(o => {
+        o.classList.remove('open');
+        o.querySelector('.faq-trigger').setAttribute('aria-expanded', 'false');
+      });
+      if (!isOpen) {
+        item.classList.add('open');
+        trigger.setAttribute('aria-expanded', 'true');
+      }
+    });
+  });
+
+  // ===== Scroll Reveal (FadeInUp via IntersectionObserver) =====
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        io.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' });
+
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+  // Close mobile menu on resize to desktop
+  let resizeTimer;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      if (window.innerWidth > 860 && menuOpen) setMenu(false);
+    }, 120);
+  });
+</script>
+
+</body>
+</html>

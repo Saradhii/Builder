@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Scene AI — Strategic AI to Scale Your Business Growth</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  /* ===== Reset ===== */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { -webkit-text-size-adjust: 100%; }
+  img, svg, video { display: block; max-width: 100%; }
+  button { font: inherit; color: inherit; background: none; border: none; cursor: pointer; }
+  a { color: inherit; text-decoration: none; }
+  ul { list-style: none; }
+
+  /* ===== Tokens ===== */
+  :root {
+    --bg: #eeeeee;
+    --ink: #000000;
+    --ink-80: rgba(0, 0, 0, 0.80);
+    --ink-70: rgba(0, 0, 0, 0.70);
+    --ink-60: rgba(0, 0, 0, 0.60);
+    --line-10: rgba(0, 0, 0, 0.10);
+    --line-20: rgba(0, 0, 0, 0.20);
+    --accent: #7e22ce;
+    --accent-hover: #6b21a8;
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.10), 0 8px 10px -6px rgba(0, 0, 0, 0.10);
+    --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  }
+
+  body {
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background-color: var(--bg);
+    color: var(--ink);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* ===== App container ===== */
+  .app {
+    position: relative;
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    overflow: hidden;
+    background-color: var(--bg);
+    color: var(--ink);
+  }
+
+  /* ===== Video background ===== */
+  .video-wrap {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .video-frame {
+    position: relative;
+    width: 150%;
+    aspect-ratio: 1 / 1;
+    max-width: 800px;
+    flex-shrink: 0;
+  }
+
+  @media (min-width: 768px) {
+    .video-frame {
+      width: 800px;
+      height: 800px;
+    }
+  }
+
+  .video-frame video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* ===== Navbar ===== */
+  .navbar {
+    width: 100%;
+    position: relative;
+    z-index: 50;
+    padding: 1.5rem 1.5rem 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  @media (min-width: 1024px) {
+    .navbar { padding: 1.5rem 3rem 0; }
+  }
+
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-shrink: 0;
+  }
+
+  .logo {
+    height: 1.75rem;
+    width: auto;
+    display: block;
+  }
+
+  .brand-name {
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+  }
+
+  .nav-links {
+    display: none;
+    align-items: center;
+    gap: 2.25rem;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  @media (min-width: 768px) {
+    .nav-links { display: flex; }
+  }
+
+  .nav-links a {
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    color: var(--ink-70);
+    transition: color 0.2s ease;
+  }
+
+  .nav-links a:hover { color: var(--ink); }
+
+  .nav-actions {
+    display: none;
+    align-items: center;
+    gap: 1.25rem;
+  }
+
+  @media (min-width: 768px) {
+    .nav-actions { display: flex; }
+  }
+
+  .login-link {
+    font-size: 13px;
+    color: var(--ink-80);
+    transition: color 0.2s ease;
+  }
+
+  .login-link:hover { color: var(--ink); }
+
+  .signup-btn {
+    background-color: #000;
+    color: #fff;
+    padding: 0.625rem 1.5rem;
+    border-radius: 9999px;
+    font-size: 13px;
+    font-weight: 600;
+    transition: transform 0.2s ease, background-color 0.2s ease;
+    display: inline-block;
+  }
+
+  .signup-btn:hover {
+    background-color: #1a1a1a;
+    transform: translateY(-1px);
+  }
+
+  /* Hamburger */
+  .hamburger {
+    display: inline-flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    width: 40px;
+    height: 40px;
+    padding: 9px 9px;
+    border-radius: 10px;
+    transition: background-color 0.2s ease;
+  }
+
+  .hamburger:hover { background-color: rgba(0, 0, 0, 0.05); }
+
+  .hamburger span {
+    display: block;
+    width: 22px;
+    height: 2px;
+    background-color: #000;
+    border-radius: 2px;
+    transition: transform 0.3s ease, opacity 0.2s ease;
+    transform-origin: center;
+  }
+
+  @media (min-width: 768px) {
+    .hamburger { display: none; }
+  }
+
+  .hamburger.active span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  .hamburger.active span:nth-child(2) { opacity: 0; }
+  .hamburger.active span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+  /* Mobile overlay */
+  .mobile-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(238, 238, 238, 0.96);
+    -webkit-backdrop-filter: blur(24px);
+    backdrop-filter: blur(24px);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.75rem;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.35s ease, visibility 0.35s ease;
+  }
+
+  .mobile-overlay.active {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .mobile-overlay a.mob-link {
+    font-size: 26px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    transition: color 0.2s ease;
+  }
+
+  .mobile-overlay a.mob-link:hover { color: var(--accent); }
+
+  .mobile-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: center;
+    margin-top: 1.5rem;
+    width: 80%;
+    max-width: 280px;
+  }
+
+  .mobile-actions .login-link {
+    font-size: 15px;
+    color: var(--ink);
+  }
+
+  .mobile-actions .signup-btn {
+    width: 100%;
+    text-align: center;
+    font-size: 15px;
+    padding: 0.85rem 1.5rem;
+  }
+
+  /* ===== Hero ===== */
+  .hero {
+    position: relative;
+    z-index: 10;
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 6rem 1.5rem 1rem;
+    text-align: center;
+    margin-top: auto;
+  }
+
+  @media (min-width: 768px) {
+    .hero { padding-bottom: 2rem; }
+  }
+
+  /* Version pill */
+  .version-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: #ffffff;
+    border: 1px solid var(--line-10);
+    border-radius: 9999px;
+    padding: 0.375rem 1rem 0.375rem 0.375rem;
+    margin-bottom: 2rem;
+    box-shadow: var(--shadow-sm);
+    transition: border-color 0.25s ease, transform 0.25s ease;
+  }
+
+  .version-pill:hover {
+    border-color: var(--line-20);
+    transform: translateY(-1px);
+  }
+
+  @media (min-width: 768px) {
+    .version-pill { margin-bottom: 2.5rem; }
+  }
+
+  .new-badge {
+    background-color: #000;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 0.3rem 0.65rem;
+    border-radius: 9999px;
+    line-height: 1;
+  }
+
+  .version-text {
+    color: #000;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-weight: 600;
+  }
+
+  /* Headline */
+  .headline {
+    color: var(--ink);
+    font-size: 36px;
+    font-weight: 500;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  @media (min-width: 768px) {
+    .headline { font-size: 44px; }
+  }
+
+  @media (min-width: 1024px) {
+    .headline { font-size: 56px; }
+  }
+
+  .headline .br-mobile { display: none; }
+  @media (min-width: 768px) {
+    .headline .br-mobile { display: block; }
+  }
+
+  /* Subheadline */
+  .subheadline {
+    color: var(--ink-60);
+    font-size: 16px;
+    font-weight: 300;
+    line-height: 1.6;
+    max-width: 600px;
+    margin: 1.5rem auto 2.5rem;
+  }
+
+  @media (min-width: 768px) {
+    .subheadline { font-size: 18px; }
+  }
+
+  /* CTA */
+  .cta-btn {
+    background-color: var(--accent);
+    color: #ffffff;
+    border: 1px solid transparent;
+    padding: 0.5rem 0.5rem 0.5rem 1.5rem;
+    border-radius: 9999px;
+    font-size: 15px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: var(--shadow-xl);
+    transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+  }
+
+  .cta-btn:hover {
+    background-color: var(--accent-hover);
+    box-shadow: var(--shadow-2xl);
+    transform: translateY(-2px);
+  }
+
+  .cta-arrow {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 9999px;
+    background-color: #ffffff;
+    color: var(--accent);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .cta-btn:hover .cta-arrow {
+    transform: translateX(4px);
+  }
+
+  /* ===== Animations ===== */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .animate-on-load {
+    animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  .delay-100 { animation-delay: 0.10s; }
+  .delay-200 { animation-delay: 0.20s; }
+  .delay-300 { animation-delay: 0.30s; }
+  .delay-400 { animation-delay: 0.40s; }
+  .delay-500 { animation-delay: 0.50s; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate-on-load {
+      animation: none;
+      opacity: 1;
+      transform: none;
+    }
+    .cta-arrow, .cta-btn { transition: none; }
+  }
+</style>
+</head>
+<body>
+  <div class="app">
+
+    <!-- Phase 1: Video Background -->
+    <div class="video-wrap" aria-hidden="true">
+      <div class="video-frame">
+        <video autoplay loop muted playsinline>
+          <source src="https://cdn.sceneai.art/Hero%20Section%20Video/c653421c-6cd9-472a-811a-b833dd320372.mp4" type="video/mp4">
+        </video>
+      </div>
+    </div>
+
+    <!-- Phase 2: Navigation -->
+    <header class="navbar animate-on-load delay-100">
+      <a href="#" class="brand" aria-label="Scene AI home">
+        <svg class="logo" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M16 2 L29 9.5 L29 22.5 L16 30 L3 22.5 L3 9.5 Z" stroke="#000000" stroke-width="2" stroke-linejoin="round"/>
+          <path d="M16 10 L22.5 13.5 L22.5 20.5 L16 24 L9.5 20.5 L9.5 13.5 Z" fill="#7e22ce"/>
+          <circle cx="16" cy="17" r="2.2" fill="#ffffff"/>
+        </svg>
+        <span class="brand-name">Scene</span>
+      </a>
+
+      <nav aria-label="Primary">
+        <ul class="nav-links">
+          <li><a href="#">Product</a></li>
+          <li><a href="#">Solutions</a></li>
+          <li><a href="#">Integrations</a></li>
+          <li><a href="#">Pricing</a></li>
+          <li><a href="#">Company</a></li>
+        </ul>
+      </nav>
+
+      <div class="nav-actions">
+        <a href="#" class="login-link">Log In</a>
+        <a href="#" class="signup-btn">Sign Up</a>
+      </div>
+
+      <button class="hamburger" id="hamburger" aria-label="Open menu" aria-expanded="false" aria-controls="mobileOverlay">
+        <span></span><span></span><span></span>
+      </button>
+    </header>
+
+    <!-- Mobile overlay -->
+    <div class="mobile-overlay" id="mobileOverlay" role="dialog" aria-modal="true" aria-label="Mobile navigation">
+      <a href="#" class="mob-link">Product</a>
+      <a href="#" class="mob-link">Solutions</a>
+      <a href="#" class="mob-link">Integrations</a>
+      <a href="#" class="mob-link">Pricing</a>
+      <a href="#" class="mob-link">Company</a>
+      <div class="mobile-actions">
+        <a href="#" class="login-link">Log In</a>
+        <a href="#" class="signup-btn">Sign Up</a>
+      </div>
+    </div>
+
+    <!-- Phase 3: Hero Content -->
+    <main class="hero">
+      <a href="#" class="version-pill animate-on-load delay-200">
+        <span class="new-badge">New</span>
+        <span class="version-text">Version V.1.02 Has Been Launched!</span>
+      </a>
+
+      <h1 class="headline animate-on-load delay-300">
+        Strategic AI to Scale Your<span class="br-mobile">&nbsp;</span><br class="br-mobile"> Business Growth.
+      </h1>
+
+      <p class="subheadline animate-on-load delay-400">
+        Transform complex workflows into intelligent, streamlined systems. We build AI solutions that move in sync with your team's rhythm.
+      </p>
+
+      <a href="#" class="cta-btn animate-on-load delay-500">
+        <span>Start Your AI</span>
+        <span class="cta-arrow" aria-hidden="true">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+            <polyline points="12 5 19 12 12 19"></polyline>
+          </svg>
+        </span>
+      </a>
+    </main>
+
+  </div>
+
+  <script>
+    (function () {
+      const hamburger = document.getElementById('hamburger');
+      const overlay = document.getElementById('mobileOverlay');
+      if (!hamburger || !overlay) return;
+
+      function toggleMenu(force) {
+        const willOpen = typeof force === 'boolean' ? force : !overlay.classList.contains('active');
+        overlay.classList.toggle('active', willOpen);
+        hamburger.classList.toggle('active', willOpen);
+        hamburger.setAttribute('aria-expanded', String(willOpen));
+        document.body.style.overflow = willOpen ? 'hidden' : '';
+      }
+
+      hamburger.addEventListener('click', () => toggleMenu());
+
+      overlay.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', () => toggleMenu(false));
+      });
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && overlay.classList.contains('active')) {
+          toggleMenu(false);
+        }
+      });
+
+      window.addEventListener('resize', () => {
+        if (window.innerWidth >= 768 && overlay.classList.contains('active')) {
+          toggleMenu(false);
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -20,6 +20,7 @@ import {
   streamChat,
   type ModelInfo,
 } from "@/lib/api-client";
+import { fetchTemplates, fetchTemplateHtml } from "@/lib/templates";
 import { deployWebsite } from "@/lib/deploy-client";
 import { captureThumbnail } from "@/lib/capture-thumbnail";
 import {
@@ -315,6 +316,7 @@ function GracefulState({
 export function ChatInterface() {
   const searchParams = useSearchParams();
   const isMockMode = searchParams.get('mock') === 'true';
+  const templateId = searchParams.get("template");
 
   const {
     setHasWorkspace,
@@ -323,6 +325,7 @@ export function ChatInterface() {
   } = useBuilderWorkspace();
 
   const [isMockReady, setIsMockReady] = useState(false);
+  const [isTemplateLoading, setIsTemplateLoading] = useState(Boolean(templateId));
   const [inputValue, setInputValue] = useState("");
   const [models, setModels] = useState<ModelInfo[]>([]);
   const [modelsStatus, setModelsStatus] = useState<"idle" | "loading" | "error">("idle");
@@ -353,6 +356,7 @@ export function ChatInterface() {
   const chatScrollRef = useRef<HTMLDivElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const requestIdRef = useRef(0);
+  const templateSeededRef = useRef(false);
 
   useEffect(() => {
     if (isMockMode && !isMockReady) {
@@ -364,6 +368,39 @@ export function ChatInterface() {
       setWorkspaceView("preview");
     }
   }, [isMockMode, isMockReady, setHasWorkspace, setHasPreview]);
+
+  useEffect(() => {
+    if (!templateId || templateSeededRef.current) return;
+    templateSeededRef.current = true;
+    let active = true;
+    void (async () => {
+      try {
+        const templates = await fetchTemplates();
+        const tpl = templates.find((t) => t.id === templateId);
+        if (!tpl) return;
+        const html = await fetchTemplateHtml(tpl.htmlUrl);
+        if (!active) return;
+        setPreviewHtml(html);
+        setConversation([
+          createConversationMessage("user", tpl.prompt),
+          createConversationMessage(
+            "assistant",
+            `Loaded the "${tpl.name}" template. The full HTML is in the preview — tell me what to change, or edit the code directly. When you're ready, hit Deploy to publish your own copy.`
+          ),
+        ]);
+        setHasWorkspace(true);
+        setHasPreview(true);
+        setWorkspaceView("preview");
+      } catch {
+        // ignore — fall back to the normal initial state
+      } finally {
+        if (active) setIsTemplateLoading(false);
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, [templateId, setHasWorkspace, setHasPreview]);
 
   useEffect(() => {
     textareaRef.current?.focus();
@@ -700,6 +737,7 @@ export function ChatInterface() {
   const requestErrorView = requestError ? formatRequestError(requestError) : null;
   const isInitialState =
     !isMockMode &&
+    !isTemplateLoading &&
     conversation.length === 0 &&
     !isStreaming &&
     !requestError &&
@@ -1012,6 +1050,14 @@ export function ChatInterface() {
       )}
     </div>
   );
+
+  if (isTemplateLoading) {
+    return (
+      <div className="h-full w-full grid place-items-center">
+        <Loader2 className="size-5 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   if (isInitialState) {
     return (
